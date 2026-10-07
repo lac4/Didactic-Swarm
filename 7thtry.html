@@ -1,0 +1,2575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>YOUR NAME</title>
+
+
+<style>
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body {
+
+    width: 100%;
+    height: 100%;
+
+}
+
+body {
+
+    background: #000;
+
+    color: #fff;
+
+    overflow: hidden;
+
+    font-family:
+        "Fira Code",
+        "JetBrains Mono",
+        "Cascadia Code",
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        Menlo,
+        monospace;
+
+}
+
+
+/* =========================================================
+   APP
+========================================================= */
+
+.app {
+
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100vh;
+
+    background: #000;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   BOID CANVAS
+========================================================= */
+
+#boidCanvas {
+
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 0;
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   VERY SUBTLE DARK CENTER
+========================================================= */
+
+.center-fade {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 1;
+
+    pointer-events: none;
+
+    background:
+
+        radial-gradient(
+            circle at center,
+            rgba(0,0,0,0.72) 0%,
+            rgba(0,0,0,0.45) 22%,
+            rgba(0,0,0,0.12) 50%,
+            rgba(0,0,0,0.45) 100%
+        );
+
+}
+
+
+/* =========================================================
+   MAIN STAGE
+========================================================= */
+
+.stage {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: min(720px, 90vw);
+
+    height: min(720px, 90vh);
+
+    transform:
+        translate(-50%, -50%);
+
+    z-index: 10;
+
+}
+
+
+/* =========================================================
+   MAIN TITLE
+========================================================= */
+
+.title {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    z-index: 2;
+
+    pointer-events: none;
+
+    font-size:
+        clamp(
+            25px,
+            4vw,
+            48px
+        );
+
+    font-weight: 400;
+
+    letter-spacing: 0.18em;
+
+    color: #fff;
+
+    white-space: nowrap;
+
+    opacity: 0.9;
+
+    transition:
+        opacity 0.35s ease;
+
+}
+
+
+/* =========================================================
+   SCRAMBLE LINE
+========================================================= */
+
+.scramble-line {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, 42px);
+
+    z-index: 3;
+
+    color: #555;
+
+    font-size: 9px;
+
+    letter-spacing: 0.18em;
+
+    white-space: nowrap;
+
+    pointer-events: auto;
+
+    opacity: 1;
+
+    transition:
+        opacity 0.6s ease;
+
+}
+
+
+/* =========================================================
+   CENTER HOVER ZONE
+========================================================= */
+
+.center-hover-zone {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 190px;
+    height: 130px;
+
+    transform:
+        translate(-50%, -50%);
+
+    z-index: 6;
+
+    pointer-events: auto;
+
+    background: transparent;
+
+}
+
+
+/* =========================================================
+   CENTER HOVER MEANING
+========================================================= */
+
+.center-label {
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, 42px);
+
+    z-index: 7;
+
+    pointer-events: none;
+
+    font-size:
+        clamp(
+            11px,
+            1.2vw,
+            14px
+        );
+
+    letter-spacing: 0.28em;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+
+    opacity: 0;
+
+    transition:
+        opacity 0.6s ease;
+
+}
+
+
+/* =========================================================
+   CENTER HOVER FLASH
+========================================================= */
+
+.center-label.active {
+
+    animation:
+        centerLabelFlash
+        2.4s ease-in-out infinite;
+
+}
+
+
+@keyframes centerLabelFlash {
+
+    0% {
+
+        opacity: 0.18;
+
+    }
+
+    50% {
+
+        opacity: 1;
+
+    }
+
+    100% {
+
+        opacity: 0.18;
+
+    }
+
+}
+
+
+/* =========================================================
+   TEXT-ONLY ORBIT BUTTONS
+========================================================= */
+
+.orbit-button {
+
+    position: absolute;
+
+    width: max-content;
+    height: auto;
+
+    min-width: 38px;
+
+    padding: 6px 8px;
+
+    border: none;
+
+    outline: none;
+
+    border-radius: 0;
+
+    background: transparent;
+
+    color: #777;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    letter-spacing: 0.08em;
+
+    cursor: pointer;
+
+    display: grid;
+
+    place-items: center;
+
+    text-align: center;
+
+    overflow: visible;
+
+    z-index: 5;
+
+    appearance: none;
+
+    -webkit-appearance: none;
+
+    transition:
+
+        transform 0.3s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        );
+
+}
+
+
+/* =========================================================
+   BUTTON POSITIONS
+========================================================= */
+
+.button-one {
+
+    top: 8%;
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+}
+
+.button-two {
+
+    right: 8%;
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+}
+
+.button-three {
+
+    bottom: 8%;
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+}
+
+.button-four {
+
+    left: 8%;
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+}
+
+
+/* =========================================================
+   FOUR DIAGONAL BUTTONS
+========================================================= */
+
+.button-five {
+
+    top: 21%;
+    left: 21%;
+
+}
+
+.button-six {
+
+    top: 21%;
+    right: 21%;
+
+}
+
+.button-seven {
+
+    bottom: 21%;
+    right: 21%;
+
+}
+
+.button-eight {
+
+    bottom: 21%;
+    left: 21%;
+
+}
+
+
+/* =========================================================
+   BUTTON TEXT
+========================================================= */
+
+.scrambled,
+.real-label {
+
+    grid-column: 1;
+    grid-row: 1;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================================================
+   SCRAMBLED TEXT
+========================================================= */
+
+.scrambled {
+
+    opacity: 1;
+
+    transition:
+        opacity 0.2s ease;
+
+}
+
+
+/* =========================================================
+   REAL LABEL
+========================================================= */
+
+.real-label {
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    transition:
+        opacity 0.2s ease;
+
+}
+
+
+/* =========================================================
+   HOVER
+========================================================= */
+
+/*
+    No background.
+    No circle.
+    No lens.
+    No giant expansion.
+
+    Just a subtle increase in size.
+*/
+
+.orbit-button:hover {
+
+    z-index: 20;
+
+}
+
+
+/* =========================================================
+   PRESERVE POSITION + SCALE ON HOVER
+========================================================= */
+
+.button-one:hover {
+
+    transform:
+        translateX(-50%)
+        scale(1.18);
+
+}
+
+.button-two:hover {
+
+    transform:
+        translateY(-50%)
+        scale(1.18);
+
+}
+
+.button-three:hover {
+
+    transform:
+        translateX(-50%)
+        scale(1.18);
+
+}
+
+.button-four:hover {
+
+    transform:
+        translateY(-50%)
+        scale(1.18);
+
+}
+
+.button-five:hover,
+.button-six:hover,
+.button-seven:hover,
+.button-eight:hover {
+
+    transform:
+        scale(1.18);
+
+}
+
+
+/* =========================================================
+   HOVER TEXT SWAP
+========================================================= */
+
+.orbit-button:hover
+.scrambled {
+
+    opacity: 0;
+
+}
+
+
+.orbit-button:hover
+.real-label {
+
+    opacity: 1;
+
+}
+
+
+/* =========================================================
+   BOUNCING LABEL LETTERS
+========================================================= */
+
+.real-label .letter {
+
+    display: inline-block;
+
+    animation:
+        labelBounce
+        0.7s ease-in-out infinite;
+
+}
+
+
+/* =========================================================
+   LETTER BOUNCE
+========================================================= */
+
+@keyframes labelBounce {
+
+    0%,
+    100% {
+
+        transform:
+            translateY(0);
+
+    }
+
+    50% {
+
+        transform:
+            translateY(-4px);
+
+    }
+
+}
+
+
+/* =========================================================
+   BRIGHTER DARK RAINBOW TEXT
+========================================================= */
+
+.title,
+.scramble-line,
+.bottom-scramble,
+.orbit-button .scrambled,
+.orbit-button .real-label,
+.corner,
+.status {
+
+    background: linear-gradient(
+        90deg,
+        #a83232,
+        #c47a22,
+        #b8b52a,
+        #27a957,
+        #2187a8,
+        #5545a8,
+        #9a329d,
+        #a83232
+    );
+
+    background-size: 500% 100%;
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    -webkit-text-fill-color: transparent;
+
+    animation:
+        darkRainbowText
+        7s linear infinite;
+
+}
+
+
+@keyframes darkRainbowText {
+
+    0% {
+
+        background-position:
+            0% 50%;
+
+    }
+
+    100% {
+
+        background-position:
+            500% 50%;
+
+    }
+
+}
+
+
+/* =========================================================
+   FLOATING MARKS
+========================================================= */
+
+.orbit-mark {
+
+    position: absolute;
+
+    width: 5px;
+    height: 5px;
+
+    background: #444;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    animation:
+        drift 6s linear infinite;
+
+}
+
+
+.mark-one {
+
+    top: 17%;
+    left: 25%;
+
+}
+
+.mark-two {
+
+    top: 27%;
+    right: 20%;
+
+    animation-delay: -2s;
+
+}
+
+.mark-three {
+
+    bottom: 19%;
+    right: 27%;
+
+    animation-delay: -4s;
+
+}
+
+.mark-four {
+
+    bottom: 25%;
+    left: 20%;
+
+    animation-delay: -1s;
+
+}
+
+
+@keyframes drift {
+
+    0% {
+
+        transform:
+            translate(0,0);
+
+        opacity: 0.15;
+
+    }
+
+    50% {
+
+        transform:
+            translate(
+                15px,
+                -12px
+            );
+
+        opacity: 0.8;
+
+    }
+
+    100% {
+
+        transform:
+            translate(0,0);
+
+        opacity: 0.15;
+
+    }
+
+}
+
+
+/* =========================================================
+   CORNER INFORMATION
+========================================================= */
+
+.corner {
+
+    position: fixed;
+
+    top: 25px;
+    left: 28px;
+
+    color: #444;
+
+    font-size: 9px;
+
+    letter-spacing: 0.15em;
+
+    z-index: 50;
+
+}
+
+
+.status {
+
+    position: fixed;
+
+    top: 25px;
+    right: 28px;
+
+    color: #333;
+
+    font-size: 8px;
+
+    letter-spacing: 0.12em;
+
+    z-index: 50;
+
+}
+
+
+/* =========================================================
+   BOTTOM TEXT
+========================================================= */
+
+.bottom-scramble {
+
+    position: fixed;
+
+    bottom: 25px;
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    color: #333;
+
+    font-size: 8px;
+
+    letter-spacing: 0.25em;
+
+    white-space: nowrap;
+
+    z-index: 50;
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+    .stage {
+
+        width: 100vw;
+
+        height: 80vh;
+
+    }
+
+
+    .orbit-button {
+
+        width: max-content;
+        height: auto;
+
+        padding: 5px 6px;
+
+        font-size: 8px;
+
+    }
+
+
+    .button-one {
+        top: 10%;
+    }
+
+    .button-two {
+        right: 4%;
+    }
+
+    .button-three {
+        bottom: 10%;
+    }
+
+    .button-four {
+        left: 4%;
+    }
+
+
+    .button-five {
+
+        top: 20%;
+        left: 14%;
+
+    }
+
+    .button-six {
+
+        top: 20%;
+        right: 14%;
+
+    }
+
+    .button-seven {
+
+        bottom: 20%;
+        right: 14%;
+
+    }
+
+    .button-eight {
+
+        bottom: 20%;
+        left: 14%;
+
+    }
+
+
+    .title {
+
+        font-size: 22px;
+
+    }
+
+
+    .scramble-line {
+
+        font-size: 7px;
+
+    }
+
+
+    .center-label {
+
+        font-size: 8px;
+
+        letter-spacing:
+            0.2em;
+
+    }
+
+
+    .corner {
+
+        left: 16px;
+        top: 17px;
+
+    }
+
+
+    .status {
+
+        right: 16px;
+        top: 17px;
+
+    }
+
+
+    .bottom-scramble {
+
+        bottom: 17px;
+
+        font-size: 6px;
+
+    }
+
+}
+
+
+/* =========================================================
+   REDUCE MOTION
+========================================================= */
+
+@media (
+    prefers-reduced-motion: reduce
+) {
+
+    * {
+
+        animation: none !important;
+
+        transition: none !important;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="app">
+
+
+<!-- =======================================================
+     BOID BACKGROUND
+======================================================= -->
+
+<canvas id="boidCanvas"></canvas>
+
+
+<div class="center-fade"></div>
+
+
+<!-- =======================================================
+     CORNER INFO
+======================================================= -->
+
+<div class="corner">
+
+    YOUR NAME // 001
+
+</div>
+
+
+<div
+    class="status"
+    id="status"
+>
+
+    * ONLINE *
+
+</div>
+
+
+<!-- =======================================================
+     MAIN STAGE
+======================================================= -->
+
+<main class="stage">
+
+
+    <!-- FLOATING MARKS -->
+
+    <span class="orbit-mark mark-one"></span>
+
+    <span class="orbit-mark mark-two"></span>
+
+    <span class="orbit-mark mark-three"></span>
+
+    <span class="orbit-mark mark-four"></span>
+
+
+    <!-- ===================================================
+         TITLE
+    ==================================================== -->
+
+    <div
+        class="title"
+        id="title"
+    >
+
+        *$#
+
+    </div>
+
+
+    <!-- ===================================================
+         SCRAMBLE LINE
+    ==================================================== -->
+
+    <div
+        class="scramble-line"
+        id="scrambleLine"
+    >
+
+        *$#
+
+    </div>
+
+
+    <!-- ===================================================
+         INVISIBLE CENTER MOUSE ZONE
+    ==================================================== -->
+
+    <div
+        class="center-hover-zone"
+        id="centerHoverZone"
+    ></div>
+
+
+    <!-- ===================================================
+         CENTER HOVER LABEL
+    ==================================================== -->
+
+    <div
+        class="center-label"
+        id="centerLabel"
+    >
+
+    </div>
+
+
+    <!-- ===================================================
+         BUTTON ONE
+    ==================================================== -->
+
+    <button
+        class="orbit-button button-one"
+        data-label="MUSIC"
+    >
+
+        <span class="scrambled">
+            *$#
+        </span>
+
+        <span class="real-label">
+            <span class="letter">M</span>
+            <span class="letter">U</span>
+            <span class="letter">S</span>
+            <span class="letter">I</span>
+            <span class="letter">C</span>
+        </span>
+
+    </button>
+
+
+    <!-- ===================================================
+         BUTTON TWO
+    ==================================================== -->
+
+    <button
+        class="orbit-button button-two"
+        data-label="ART"
+    >
+
+        <span class="scrambled">
+            #$*
+        </span>
+
+        <span class="real-label">
+            <span class="letter">A</span>
+            <span class="letter">R</span>
+            <span class="letter">T</span>
+        </span>
+
+    </button>
+
+
+    <!-- ===================================================
+         BUTTON THREE
+    ==================================================== -->
+
+    <button
+        class="orbit-button button-three"
+        data-label="PROJECTS"
+    >
+
+        <span class="scrambled">
+            $*#
+        </span>
+
+        <span class="real-label">
+            <span class="letter">P</span>
+            <span class="letter">R</span>
+            <span class="letter">O</span>
+            <span class="letter">J</span>
+            <span class="letter">E</span>
+            <span class="letter">C</span>
+            <span class="letter">T</span>
+            <span class="letter">S</span>
+        </span>
+
+    </button>
+
+
+    <!-- ===================================================
+         BUTTON FOUR
+    ==================================================== -->
+
+    <button
+        class="orbit-button button-four"
+        data-label="CONTACT"
+    >
+
+        <span class="scrambled">
+            #*$
+        </span>
+
+        <span class="real-label">
+            <span class="letter">C</span>
+            <span class="letter">O</span>
+            <span class="letter">N</span>
+            <span class="letter">T</span>
+            <span class="letter">A</span>
+            <span class="letter">C</span>
+            <span class="letter">T</span>
+        </span>
+
+    </button>
+
+
+    <!-- ===================================================
+         BUTTON FIVE
+    ==================================================== -->
+
+    <button
+        class="orbit-button button-five"
+        data-label="ABOUT"
+    >
+
+        <span class="scrambled">
+            %$@
+        </span>
+
+        <span class="real-label">
+            <span class="letter">A</span>
+            <span class="letter">B</span>
+            <span class="letter">O</span>
+            <span class="letter">U</span>
+            <span class="letter">T</span>
+        </span>
+
+    </button>
+
+
+    <!-- ===================================================
+         BUTTON SIX
+    ==================================================== -->
+
+    <button
+        class="orbit-button button-six"
+        data-label="VIDEO"
+    >
+
+        <span class="scrambled">
+            &*#
+        </span>
+
+        <span class="real-label">
+            <span class="letter">V</span>
+            <span class="letter">I</span>
+            <span class="letter">D</span>
+            <span class="letter">E</span>
+            <span class="letter">O</span>
+        </span>
+
+    </button>
+
+
+    <!-- ===================================================
+         BUTTON SEVEN
+    ==================================================== -->
+
+    <button
+        class="orbit-button button-seven"
+        data-label="WRITING"
+    >
+
+        <span class="scrambled">
+            @#$
+        </span>
+
+        <span class="real-label">
+            <span class="letter">W</span>
+            <span class="letter">R</span>
+            <span class="letter">I</span>
+            <span class="letter">T</span>
+            <span class="letter">I</span>
+            <span class="letter">N</span>
+            <span class="letter">G</span>
+        </span>
+
+    </button>
+
+
+    <!-- ===================================================
+         BUTTON EIGHT
+    ==================================================== -->
+
+    <button
+        class="orbit-button button-eight"
+        data-label="LINKS"
+    >
+
+        <span class="scrambled">
+            !%*
+        </span>
+
+        <span class="real-label">
+            <span class="letter">L</span>
+            <span class="letter">I</span>
+            <span class="letter">N</span>
+            <span class="letter">K</span>
+            <span class="letter">S</span>
+        </span>
+
+    </button>
+
+
+</main>
+
+
+<!-- =======================================================
+     BOTTOM SCRAMBLE
+======================================================= -->
+
+<div
+    class="bottom-scramble"
+    id="bottomScramble"
+>
+
+    01001101 * $ # 01001001
+
+</div>
+
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   SYMBOL SYSTEM
+========================================================= */
+
+const characters =
+    "*$#@%&!?01<>[]{}+/\\|ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+
+/* =========================================================
+   RANDOM CHARACTER
+========================================================= */
+
+function randomCharacter() {
+
+    return characters[
+        Math.floor(
+            Math.random() *
+            characters.length
+        )
+    ];
+
+}
+
+
+/* =========================================================
+   SCRAMBLE
+========================================================= */
+
+function makeScramble(length) {
+
+    let result = "";
+
+    for (
+        let i = 0;
+        i < length;
+        i++
+    ) {
+
+        result +=
+            randomCharacter();
+
+    }
+
+    return result;
+
+}
+
+
+/* =========================================================
+   TITLE
+========================================================= */
+
+const title =
+    document.getElementById("title");
+
+
+setInterval(
+    () => {
+
+        title.textContent =
+            makeScramble(3);
+
+    },
+    110
+);
+
+
+/* =========================================================
+   SCRAMBLE LINE
+========================================================= */
+
+const scrambleLine =
+    document.getElementById(
+        "scrambleLine"
+    );
+
+
+/* =========================================================
+   CENTER HOVER STATE
+========================================================= */
+
+let centerHover = false;
+
+
+/* =========================================================
+   SCRAMBLE LINE ANIMATION
+========================================================= */
+
+setInterval(
+    () => {
+
+        if (
+            !centerHover
+        ) {
+
+            scrambleLine.textContent =
+                makeScramble(12);
+
+        }
+
+    },
+    110
+);
+
+
+/* =========================================================
+   BOTTOM SCRAMBLE
+========================================================= */
+
+const bottomScramble =
+    document.getElementById(
+        "bottomScramble"
+    );
+
+
+setInterval(
+    () => {
+
+        bottomScramble.textContent =
+            makeScramble(22);
+
+    },
+    130
+);
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+const buttons =
+    document.querySelectorAll(
+        ".orbit-button"
+    );
+
+
+/* =========================================================
+   CENTER HOVER ZONE
+========================================================= */
+
+const centerHoverZone =
+    document.getElementById(
+        "centerHoverZone"
+    );
+
+
+centerHoverZone.addEventListener(
+    "mouseenter",
+    () => {
+
+        centerHover = true;
+
+    }
+);
+
+
+centerHoverZone.addEventListener(
+    "mouseleave",
+    () => {
+
+        centerHover = false;
+
+    }
+);
+
+
+/* =========================================================
+   BUTTON SCRAMBLING + HOVER LABEL
+========================================================= */
+
+buttons.forEach(
+    button => {
+
+        const scrambled =
+            button.querySelector(
+                ".scrambled"
+            );
+
+
+        const realLabel =
+            button.querySelector(
+                ".real-label"
+            );
+
+
+        const label =
+            button.dataset.label;
+
+
+        /* =================================================
+           RANDOMIZE SCRAMBLE
+        ================================================= */
+
+        setInterval(
+            () => {
+
+                if (
+                    !button.matches(":hover")
+                ) {
+
+                    scrambled.textContent =
+                        makeScramble(3);
+
+                }
+
+            },
+            100
+        );
+
+
+        /* =================================================
+           HOVER IN
+        ================================================= */
+
+        button.addEventListener(
+            "mouseenter",
+            () => {
+
+                scrambleLine.textContent =
+                    label;
+
+
+                /*
+                    Give every letter a slightly different
+                    bounce timing so the word feels alive.
+                */
+
+                const letters =
+                    realLabel.querySelectorAll(
+                        ".letter"
+                    );
+
+
+                letters.forEach(
+                    (letter, index) => {
+
+                        letter.style.animationDelay =
+                            `${index * 0.07}s`;
+
+                    }
+                );
+
+            }
+        );
+
+
+        /* =================================================
+           HOVER OUT
+        ================================================= */
+
+        button.addEventListener(
+            "mouseleave",
+            () => {
+
+                scrambleLine.textContent =
+                    makeScramble(12);
+
+            }
+        );
+
+
+        /* =================================================
+           CLICK
+        ================================================= */
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                document.getElementById(
+                    "status"
+                ).textContent =
+                    label +
+                    " // SELECTED";
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================================================
+   BOID SYSTEM
+========================================================= */
+
+const canvas =
+    document.getElementById(
+        "boidCanvas"
+    );
+
+const ctx =
+    canvas.getContext("2d");
+
+
+/* =========================================================
+   CANVAS SIZE
+========================================================= */
+
+let width = 0;
+let height = 0;
+
+
+function resizeCanvas() {
+
+    width =
+        canvas.width =
+        window.innerWidth;
+
+    height =
+        canvas.height =
+        window.innerHeight;
+
+}
+
+
+resizeCanvas();
+
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
+
+
+/* =========================================================
+   MOUSE
+========================================================= */
+
+const mouse = {
+
+    x: 0,
+
+    y: 0,
+
+    active: false
+
+};
+
+
+/*
+    Track whether the browser window is currently focused.
+*/
+
+let pageFocused =
+    document.hasFocus();
+
+
+/* =========================================================
+   MOUSE MOVE
+========================================================= */
+
+window.addEventListener(
+    "mousemove",
+    event => {
+
+        mouse.x =
+            event.clientX;
+
+        mouse.y =
+            event.clientY;
+
+
+        /*
+            The mouse normally activates the swarm.
+
+            The only exception is the center hover zone.
+        */
+
+        mouse.active =
+            pageFocused &&
+            !centerHover;
+
+    }
+);
+
+
+/* =========================================================
+   WINDOW FOCUS
+========================================================= */
+
+window.addEventListener(
+    "focus",
+    () => {
+
+        pageFocused = true;
+
+    }
+);
+
+
+/* =========================================================
+   WINDOW BLUR
+========================================================= */
+
+window.addEventListener(
+    "blur",
+    () => {
+
+        pageFocused = false;
+
+        mouse.active = false;
+
+    }
+);
+
+
+/* =========================================================
+   POINTER LEAVES WINDOW
+========================================================= */
+
+document.addEventListener(
+    "mouseleave",
+    () => {
+
+        mouse.active = false;
+
+    }
+);
+
+
+/* =========================================================
+   POINTER RETURNS TO WINDOW
+========================================================= */
+
+document.addEventListener(
+    "mouseenter",
+    event => {
+
+        if (
+            pageFocused &&
+            !centerHover
+        ) {
+
+            mouse.x =
+                event.clientX;
+
+            mouse.y =
+                event.clientY;
+
+            mouse.active = true;
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   TOUCH
+========================================================= */
+
+window.addEventListener(
+    "touchmove",
+    event => {
+
+        if (
+            event.touches.length
+        ) {
+
+            mouse.x =
+                event.touches[0].clientX;
+
+            mouse.y =
+                event.touches[0].clientY;
+
+            mouse.active =
+                pageFocused &&
+                !centerHover;
+
+        }
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+/* =========================================================
+   BOID SETTINGS
+========================================================= */
+
+const BOID_COUNT = 120;
+
+const NEIGHBOR_RADIUS = 75;
+
+const SEPARATION_RADIUS = 22;
+
+const MAX_SPEED = 1.25;
+
+const MAX_FORCE = 0.025;
+
+
+/* =========================================================
+   SYMBOL POOL
+========================================================= */
+
+const flockSymbols = [
+
+    "*",
+    "$",
+    "#",
+    "%",
+    "&",
+    "?",
+    "!",
+    "+",
+    "=",
+    "/",
+    "\\",
+    "<",
+    ">",
+    "[",
+    "]",
+    "{",
+    "}",
+    "0",
+    "1",
+    "A",
+    "X",
+    "Z",
+    "Ø",
+    "∆",
+    "∞"
+
+];
+
+
+/* =========================================================
+   RANDOM SYMBOL
+========================================================= */
+
+function randomSymbol() {
+
+    return flockSymbols[
+        Math.floor(
+            Math.random() *
+            flockSymbols.length
+        )
+    ];
+
+}
+
+
+/* =========================================================
+   RANDOM RANGE
+========================================================= */
+
+function randomRange(
+    min,
+    max
+) {
+
+    return (
+        Math.random() *
+        (max - min)
+    ) + min;
+
+}
+
+
+/* =========================================================
+   BOID CLASS
+========================================================= */
+
+class Boid {
+
+    constructor() {
+
+        this.x =
+            Math.random() *
+            width;
+
+        this.y =
+            Math.random() *
+            height;
+
+
+        const angle =
+            Math.random() *
+            Math.PI * 2;
+
+
+        const speed =
+            randomRange(
+                0.2,
+                MAX_SPEED
+            );
+
+
+        this.vx =
+            Math.cos(angle) *
+            speed;
+
+        this.vy =
+            Math.sin(angle) *
+            speed;
+
+
+        this.ax = 0;
+
+        this.ay = 0;
+
+
+        this.size =
+            randomRange(
+                34,
+                44
+            );
+
+
+        this.symbol =
+            randomSymbol();
+
+
+        this.opacity =
+            randomRange(
+                0.18,
+                0.62
+            );
+
+
+        this.changeTimer =
+            randomRange(
+                100,
+                500
+            );
+
+    }
+
+
+    applyForce(
+        fx,
+        fy
+    ) {
+
+        this.ax += fx;
+
+        this.ay += fy;
+
+    }
+
+
+    update(
+        boids
+    ) {
+
+        let alignmentX = 0;
+        let alignmentY = 0;
+
+        let cohesionX = 0;
+        let cohesionY = 0;
+
+        let separationX = 0;
+        let separationY = 0;
+
+        let total = 0;
+
+        let separationTotal = 0;
+
+
+        for (
+            let other of boids
+        ) {
+
+            if (
+                other === this
+            ) {
+
+                continue;
+
+            }
+
+
+            const dx =
+                other.x -
+                this.x;
+
+            const dy =
+                other.y -
+                this.y;
+
+
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
+
+
+            if (
+                distance <
+                NEIGHBOR_RADIUS
+            ) {
+
+                alignmentX +=
+                    other.vx;
+
+                alignmentY +=
+                    other.vy;
+
+
+                cohesionX +=
+                    other.x;
+
+                cohesionY +=
+                    other.y;
+
+
+                total++;
+
+            }
+
+
+            if (
+                distance <
+                SEPARATION_RADIUS &&
+                distance > 0
+            ) {
+
+                separationX -=
+                    dx / distance;
+
+                separationY -=
+                    dy / distance;
+
+                separationTotal++;
+
+            }
+
+        }
+
+
+        if (
+            total > 0
+        ) {
+
+            alignmentX /=
+                total;
+
+            alignmentY /=
+                total;
+
+
+            alignmentX -=
+                this.vx;
+
+            alignmentY -=
+                this.vy;
+
+
+            this.applyForce(
+                alignmentX *
+                0.012,
+
+                alignmentY *
+                0.012
+            );
+
+        }
+
+
+        if (
+            total > 0
+        ) {
+
+            cohesionX /=
+                total;
+
+            cohesionY /=
+                total;
+
+
+            const cx =
+                cohesionX -
+                this.x;
+
+            const cy =
+                cohesionY -
+                this.y;
+
+
+            this.applyForce(
+                cx *
+                0.0008,
+
+                cy *
+                0.0008
+            );
+
+        }
+
+
+        if (
+            separationTotal > 0
+        ) {
+
+            this.applyForce(
+
+                separationX *
+                0.045,
+
+                separationY *
+                0.045
+
+            );
+
+        }
+
+
+        /* =================================================
+           MOUSE FORCE
+        ================================================= */
+
+        if (
+            mouse.active
+        ) {
+
+            const dx =
+                mouse.x -
+                this.x;
+
+            const dy =
+                mouse.y -
+                this.y;
+
+
+            const distance =
+                Math.sqrt(
+                    dx * dx +
+                    dy * dy
+                );
+
+
+            if (
+                distance < 260
+            ) {
+
+                const strength =
+                    (1 -
+                        distance /
+                        260
+                    ) *
+                    0.012;
+
+
+                this.applyForce(
+
+                    dx *
+                    strength,
+
+                    dy *
+                    strength
+
+                );
+
+            }
+
+        }
+
+
+        /* =================================================
+           CENTER REPULSION
+        ================================================= */
+
+        const centerX =
+            width / 2;
+
+        const centerY =
+            height / 2;
+
+
+        const centerDX =
+            this.x -
+            centerX;
+
+        const centerDY =
+            this.y -
+            centerY;
+
+
+        const centerDistance =
+            Math.sqrt(
+                centerDX *
+                centerDX +
+
+                centerDY *
+                centerDY
+            );
+
+
+        const centerRadius =
+            Math.min(
+                width,
+                height
+            ) *
+            0.20;
+
+
+        if (
+            centerDistance <
+            centerRadius
+        ) {
+
+            const push =
+                (
+                    1 -
+                    centerDistance /
+                    centerRadius
+                ) *
+                0.035;
+
+
+            this.applyForce(
+
+                centerDX *
+                push,
+
+                centerDY *
+                push
+
+            );
+
+        }
+
+
+        this.vx +=
+            this.ax;
+
+        this.vy +=
+            this.ay;
+
+
+        const speed =
+            Math.sqrt(
+                this.vx *
+                this.vx +
+
+                this.vy *
+                this.vy
+            );
+
+
+        if (
+            speed > MAX_SPEED
+        ) {
+
+            this.vx =
+                (
+                    this.vx /
+                    speed
+                ) *
+                MAX_SPEED;
+
+            this.vy =
+                (
+                    this.vy /
+                    speed
+                ) *
+                MAX_SPEED;
+
+        }
+
+
+        this.x +=
+            this.vx;
+
+        this.y +=
+            this.vy;
+
+
+        this.ax = 0;
+
+        this.ay = 0;
+
+
+        const margin = 30;
+
+
+        if (
+            this.x < -margin
+        ) {
+
+            this.x =
+                width + margin;
+
+        }
+
+
+        if (
+            this.x >
+            width + margin
+        ) {
+
+            this.x =
+                -margin;
+
+        }
+
+
+        if (
+            this.y < -margin
+        ) {
+
+            this.y =
+                height + margin;
+
+        }
+
+
+        if (
+            this.y >
+            height + margin
+        ) {
+
+            this.y =
+                -margin;
+
+        }
+
+
+        this.changeTimer--;
+
+
+        if (
+            this.changeTimer <= 0
+        ) {
+
+            this.symbol =
+                randomSymbol();
+
+
+            this.changeTimer =
+                randomRange(
+                    100,
+                    500
+                );
+
+        }
+
+    }
+
+
+    draw() {
+
+        ctx.save();
+
+        ctx.font =
+            `${this.size}px "Fira Code", monospace`;
+
+        ctx.textAlign =
+            "center";
+
+        ctx.textBaseline =
+            "middle";
+
+
+        const speed =
+            Math.sqrt(
+                this.vx *
+                this.vx +
+
+                this.vy *
+                this.vy
+            );
+
+
+        const brightness =
+            Math.min(
+                0.55,
+                this.opacity +
+                speed * 0.08
+            );
+
+
+        const time =
+            performance.now() * 0.00008;
+
+
+        const hue =
+            (
+                time * 360 +
+                this.x * 0.08 +
+                this.y * 0.04
+            ) % 360;
+
+
+        ctx.fillStyle =
+            `hsla(
+                ${hue},
+                75%,
+                42%,
+                ${brightness}
+            )`;
+
+
+        ctx.fillText(
+
+            this.symbol,
+
+            this.x,
+
+            this.y
+
+        );
+
+
+        ctx.restore();
+
+    }
+
+}
+
+
+/* =========================================================
+   CREATE FLOCK
+========================================================= */
+
+const flock = [];
+
+
+for (
+    let i = 0;
+    i < BOID_COUNT;
+    i++
+) {
+
+    flock.push(
+        new Boid()
+    );
+
+}
+
+
+/* =========================================================
+   DRAW LOOP
+========================================================= */
+
+function animate() {
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    for (
+        let boid of flock
+    ) {
+
+        boid.update(
+            flock
+        );
+
+    }
+
+
+    for (
+        let boid of flock
+    ) {
+
+        boid.draw();
+
+    }
+
+
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+
+animate();
+
+
+/* =========================================================
+   SUBTLE STAGE PARALLAX
+========================================================= */
+
+const stage =
+    document.querySelector(
+        ".stage"
+    );
+
+
+document.addEventListener(
+    "mousemove",
+    event => {
+
+        const x =
+            (
+                event.clientX /
+                window.innerWidth -
+                0.5
+            ) * 8;
+
+
+        const y =
+            (
+                event.clientY /
+                window.innerHeight -
+                0.5
+            ) * 8;
+
+
+        stage.style.marginLeft =
+            `${x}px`;
+
+        stage.style.marginTop =
+            `${y}px`;
+
+    }
+);
+
+
+/* =========================================================
+   INITIAL STATUS
+========================================================= */
+
+setInterval(
+    () => {
+
+        const statuses = [
+
+            "* ONLINE *",
+            "* SIGNAL *",
+            "* ACTIVE *",
+            "* 001 *",
+            "* * *"
+
+        ];
+
+
+        document.getElementById(
+            "status"
+        ).textContent =
+            statuses[
+                Math.floor(
+                    Math.random() *
+                    statuses.length
+                )
+            ];
+
+    },
+    1800
+);
+
+</script>
+
+
+</body>
+
+</html>
